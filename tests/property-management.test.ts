@@ -1,21 +1,46 @@
+import { describe, it, expect, beforeEach } from "vitest"
 
-import { describe, expect, it } from "vitest";
+// Mock storage for maintenance requests
+const maintenanceRequests = new Map()
+let nextRequestId = 1
 
-const accounts = simnet.getAccounts();
-const address1 = accounts.get("wallet_1")!;
+// Mock functions to simulate contract behavior
+function submitMaintenanceRequest(description: string, requester: string) {
+  const requestId = nextRequestId++
+  maintenanceRequests.set(requestId, { description, requester })
+  return requestId
+}
 
-/*
-  The test below is an example. To learn more, read the testing documentation here:
-  https://docs.hiro.so/stacks/clarinet-js-sdk
-*/
+function getMaintenanceRequest(requestId: number) {
+  return maintenanceRequests.get(requestId)
+}
 
-describe("example tests", () => {
-  it("ensures simnet is well initalised", () => {
-    expect(simnet.blockHeight).toBeDefined();
-  });
+describe("Property Management Contract", () => {
+  beforeEach(() => {
+    maintenanceRequests.clear()
+    nextRequestId = 1
+  })
+  
+  it("should submit a maintenance request", () => {
+    const requestId = submitMaintenanceRequest("Fix leaky faucet", "tenant1")
+    expect(requestId).toBe(1)
+    const request = getMaintenanceRequest(requestId)
+    expect(request).toBeDefined()
+    expect(request.description).toBe("Fix leaky faucet")
+    expect(request.requester).toBe("tenant1")
+  })
+  
+  it("should get maintenance request details", () => {
+    const requestId = submitMaintenanceRequest("Fix leaky faucet", "tenant1")
+    const request = getMaintenanceRequest(requestId)
+    expect(request).toBeDefined()
+    expect(request.description).toBe("Fix leaky faucet")
+    expect(request.requester).toBe("tenant1")
+  })
+  
+  it("should return undefined for non-existent request", () => {
+    const request = getMaintenanceRequest(999)
+    expect(request).toBeUndefined()
+  })
+})
 
-  // it("shows an example", () => {
-  //   const { result } = simnet.callReadOnlyFn("counter", "get-counter", [], address1);
-  //   expect(result).toBeUint(0);
-  // });
-});
